@@ -76,7 +76,7 @@ class regex
 		//	 class to allow the 'e' (evaluate) modifier
 		//	 so we is stripped from modifiers part of the
 		//	 regex
-		if( preg_match( '/^(.).*?(?<=(?<=\\\\\\\\)|(?<!\\\\))\1(.*)$/is' , $find , $matches ) )
+		if( empty($errors) && preg_match( '/^(.).*?(?<=(?<=\\\\\\\\)|(?<!\\\\))\1(.*)$/is' , $find , $matches ) )
 		{
 			$find = preg_replace( '/'.$matches[2].'$/' , str_replace('e','',$matches[2]) , $find );
 		}
@@ -123,7 +123,7 @@ class regex
 		{
 			$errors = array_merge( $errors , $tmp );
 		}
-		
+
 		if( empty($errors) )
 		{
 			if( $replace === false )
@@ -164,7 +164,19 @@ class regex
 			}
 			unset($php_errormsg);
 
-			@preg_match( $find , '' );
+			$display_errors = ini_get('display_errors');
+			ini_set('display_errors','stderr');
+
+			$html_errors = ini_get('html_errors');
+			ini_set('html_errors','false');
+
+			preg_match( $find , '' );
+
+			ini_set('display_errors',$display_errors);
+			ini_set('html_errors',$html_errors);
+
+			unset( $display_errors , $html_errors );
+
 			if( isset($php_errormsg) )
 			{
 				$php_errormsg = str_replace('preg_match(): ','',$php_errormsg);
@@ -192,7 +204,7 @@ class regex
 	}
 
 /**
- * @method report provides information about what the regex matched 
+ * @method report provides information about what the regex matched
  * in the sample string
  *
  * @param string $sample text the regex is to be applied to
@@ -345,7 +357,7 @@ class regex
  */
 	public static function set_sample_len( $len )
 	{
-		if( !is_int($len) || $len < 3 ) 
+		if( !is_int($len) || $len < 3 )
 		{
 			// throw
 			return false;
@@ -383,7 +395,7 @@ class regex
 		);
 		return preg_replace( $find , $replace , $input );
 	}
-} 
+}
 
 
 
@@ -406,7 +418,7 @@ class regex_match extends regex
 
 
 /**
- * @method report provides information about what the regex matched 
+ * @method report provides information about what the regex matched
  * in the sample string
  *
  * @param string $sample text the regex is to be applied to
@@ -438,7 +450,8 @@ class regex_match extends regex
 			$time = '-1';
 			$count = -1;
 			$sample_str = '';
-		}//debug($matches);
+		}
+
 		$output = array_merge(
 			 array(
 				 'output' => $matches
@@ -537,7 +550,7 @@ class regex_error extends regex
 
 
 /**
- * @method report provides information about what the regex matched 
+ * @method report provides information about what the regex matched
  * in the sample string
  *
  * @param string $sample text the regex is to be applied to
@@ -590,6 +603,7 @@ class regex_error extends regex
 			$e_count = count($this->errors);
 			--$e_count;
 			$error = $this->errors[$e_count];
+			$error_wrap = array( 'open' => '' , 'close' => '' );
 			if( preg_match('/missing (?:terminating )?([\]\}\)]) .*? offset ([0-9]+)/' , $error , $matches ) )
 			{
 				$bracket = $matches[1];
@@ -664,11 +678,12 @@ class regex_error extends regex
 			}
 			else
 			{
-				die("PREG encountered an error I couldn't recognise (or at least haven't seen yet): \"$error\"");
+				$error_wrap = array( 'open' => '<span class="unknown"' , 'close' => '</span>' );
+//				die("PREG encountered an error I couldn't recognise (or at least haven't seen yet): \"$error\"");
 			}
 			$error = str_replace('preg_match() [function.preg-match]: ','',strip_tags($error));
 			$this->errors = array(
-				 'error_message' => $error
+				 'error_message' => $error_wrap['open'].$error.$error_wrap['close']
 				,'error_highlight' => $this->highlight
 			);
 			$this->error_processed = true;
@@ -691,5 +706,5 @@ class regex_error extends regex
 
 if( !class_exists( 'micro_time' ) )
 {
-	require( 'micro_time.class.php' );
+	require( dirname(__FILE__).'/micro_time.class.php' );
 }
