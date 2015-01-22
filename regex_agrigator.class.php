@@ -167,7 +167,12 @@ class regex_agrigator
 		}
 		else
 		{
-			return explode( self::split_clean($split) , $input );
+			$throughput = explode( self::split_clean($split) , $input );
+			for( $a = 0 ; $a < count($throughput) ; $a += 1 )
+			{
+				$throughput[$a] = trim($throughput[$a]);
+			}
+			return $throughput;
 		}
 	}
 
