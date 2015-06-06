@@ -1,6 +1,6 @@
 <?php
 /**
- * @function regex_debug_php outputs PHP error message (if any) for a particular regex
+ * @function regex_error outputs PHP error message (if any) for a particular regex
  * 
  * Takes a supplied regular expression and runs it through
  * the appropriate PHP core function trapping any errror
@@ -12,7 +12,7 @@
  * @return string if the supplied regular expression generated an error
  * @return boolean false if the supplied regular expression didn't generate an error
  */
-function regex_debug_php( $regex , $pcre = true )
+function regex_error( $regex , $pcre = true )
 {
 	
 	if($old_track_errors = ini_get('track_errors'))
@@ -50,4 +50,11 @@ function regex_debug_php( $regex , $pcre = true )
 	return $output;
 };
 
-
+function regex_has_error( $regex , $pcre = true )
+{
+	return regex_error( $regex , $pcre = true );
+}
+function regex_debug_php( $regex , $pcre = true )
+{
+	return regex_error( $regex , $pcre = true );
+}
